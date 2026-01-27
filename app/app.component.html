@@ -1,0 +1,131 @@
+<form [formGroup]="form" class="soa">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>ID <input formControlName="id"></div>
+    <div class="title">
+      <strong>NATIONAL TELECOMMUNICATIONS COMMISSION</strong><br>
+      Regional Office No. 5<br>
+      <b>STATEMENT OF ACCOUNT</b>
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" formControlName="isMobile"> is Mobile Licensing
+      </label>
+    </div>
+  </div>
+
+  <!-- TOP INFO -->
+  <div class="top-grid">
+    <label>DATE:</label><input formControlName="date">
+    <label>Name of Payor:</label><input formControlName="payor">
+    <label>Address:</label><input formControlName="address">
+    <label>PARTICULARS:</label><input formControlName="particulars">
+    <label>PERIOD COVERED:</label><input formControlName="period">
+  </div>
+
+  <!-- SERIES -->
+  <div class="series">
+    SOA Series <input formControlName="soaSeries">
+    <span class="red">Series</span>
+    <input formControlName="serialNo">
+  </div>
+
+  <!-- MAIN BODY -->
+  <div class="body">
+
+    <!-- LEFT -->
+    <div class="panel">
+      <div class="section">FOR LICENSES</div>
+      <input placeholder="Permit to Purchase" formControlName="permitPurchase">
+      <input placeholder="Filing Fee" formControlName="filingFeeLicense">
+      <input placeholder="Permit to Possess/Storage" formControlName="permitPossess">
+      <input placeholder="Construction Permit Fee" formControlName="constructionFee">
+      <input placeholder="Radio Station License" formControlName="radioLicense">
+      <input placeholder="Inspection Fee" formControlName="inspectionFeeLicense">
+      <input placeholder="Spectrum User's Fee (SUF)" formControlName="suf">
+      <input placeholder="Fines and Penalties" formControlName="fines">
+      <input placeholder="Surcharges" formControlName="surchargeLicense">
+
+      <div class="section">OTHER APPLICATION</div>
+      <input placeholder="Registration Fee">
+      <input placeholder="Supervision & Regulation Fee">
+      <input placeholder="Verification Fee">
+      <input placeholder="Examination Fee">
+      <input placeholder="Clearance/Certification Fee">
+      <input placeholder="Modification Fee">
+      <input placeholder="Miscellaneous Income">
+      <input placeholder="Others">
+    </div>
+
+    <!-- CENTER -->
+    <div class="panel">
+      <div class="section">FOR PERMITS</div>
+      <input placeholder="Permit Fees" formControlName="permitFees">
+      <input placeholder="Inspection Fee" formControlName="inspectionFeePermit">
+      <input placeholder="Filing Fee" formControlName="filingFeePermit">
+      <input placeholder="Surcharges" formControlName="surchargePermit">
+
+      <div class="section">FOR AMATEUR AND ROC</div>
+      <div class="row">
+        Radio Station License <input formControlName="amateurRadio">
+      </div>
+      <div class="row">
+        Radio Operator's Cert. <input formControlName="rocCert">
+      </div>
+      <div class="row">
+        Application Fee <input formControlName="applicationFee">
+      </div>
+      <div class="row">
+        Filing Fee <input formControlName="filingFeeAmateur">
+      </div>
+      <div class="row">
+        Seminar Fee <input formControlName="seminarFee">
+      </div>
+      <div class="row">
+        Surcharges <input formControlName="surchargeAmateur">
+      </div>
+
+      <div class="section">Documentary Stamp</div>
+      <div class="row">
+        Documentary Stamp Tax <input formControlName="dst">
+      </div>
+
+      <div class="total">
+        TOTAL AMOUNT {{ total | number:'1.2-2' }}
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="panel right">
+      <button (click)="save()">SAVE</button>
+      <button type="reset">NEW RECORD</button>
+      <button type="button">SOA PRINT PREVIEW</button>
+
+      <div class="remarks">
+        Remarks / Note
+        <textarea formControlName="remarks"></textarea>
+      </div>
+
+      <div class="assessment">
+        <label><input type="checkbox"> For Assessment Only</label>
+        <label><input type="checkbox"> Endorsed for Payment</label>
+        <textarea formControlName="assessmentNote"></textarea>
+      </div>
+
+      <label>Prepared By</label>
+      <input formControlName="preparedBy">
+
+      <label>Approved By</label>
+      <input formControlName="approvedBy">
+
+      <div class="op">
+        OP Series <input>
+        OR Number <input formControlName="orNo">
+        Date Paid <input formControlName="datePaid">
+      </div>
+    </div>
+
+  </div>
+</form>
+
