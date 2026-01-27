@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { SoaService } from './services/soa.service';
+import { SoaDetail } from './models/soa-detail.model';
 
 @Component({
   selector: 'app-root',
@@ -9,27 +11,33 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  form: FormGroup;
+  form!: FormGroup;
+  details: SoaDetail[] = [];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private soaService: SoaService
+  ) {}
+
+  ngOnInit(): void {
     this.form = this.fb.group({
 
       // HEADER
       id: ['6792'],
-      date: ['2025-08-14'],
+      date: [''],
       payor: [''],
       address: [''],
       particulars: [''],
       period: [''],
 
-      soaSeries: ['2025-08-327M'],
-      serialNo: ['327'],
-      isMobile: [true],
+      soaSeries: [''],
+      serialNo: [''],
+      isMobile: [false],
 
-      txnType: ['New'],
-      licenseType: ['ROC'],
+      txnType: [''],
+      licenseType: [''],
 
       // LICENSE FEES
       permitPurchase: [''],
@@ -49,24 +57,49 @@ export class AppComponent {
       surchargePermit: [''],
 
       // AMATEUR
-      amateurRadio: [432],
-      rocCert: [180],
+      amateurRadio: [0],
+      rocCert: [0],
       applicationFee: [''],
       filingFeeAmateur: [''],
       seminarFee: [''],
-      surchargeAmateur: [102],
+      surchargeAmateur: [0],
 
       // OTHER
-      dst: [30],
+      dst: [0],
 
       remarks: [''],
       assessmentNote: [''],
-
       preparedBy: [''],
       approvedBy: [''],
-
       orNo: [''],
       datePaid: ['']
+    });
+
+    // LOAD EXISTING SOA
+    this.loadSoa(6792);
+  }
+
+  loadSoa(id: number): void {
+
+    // SOA HEADER
+    this.soaService.getSoa(id).subscribe({
+      next: soa => this.form.patchValue(soa),
+      error: err => console.error('SOA load error', err)
+    });
+
+    // SOA DETAILS
+    this.soaService.getSoaDetails(id).subscribe({
+      next: details => {
+        this.details = details;
+
+        // auto-map detail amounts into form fields
+        details.forEach(d => {
+          if (this.form.contains(d.field)) {
+            this.form.get(d.field)?.setValue(d.amount);
+          }
+        });
+      },
+      error: err => console.error('SOA details error', err)
     });
   }
 
@@ -80,8 +113,11 @@ export class AppComponent {
     );
   }
 
-  save() {
-    console.log(this.form.value);
+  save(): void {
+    console.log('FINAL SOA PAYLOAD', {
+      header: this.form.value,
+      details: this.details
+    });
     alert('SOA Saved');
   }
 }
