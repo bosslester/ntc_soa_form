@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SoaService } from './services/soa.service';
 import { SoaDetail } from './models/soa-detail.model';
+import { SoaFormComponent } from "./components/soa-form/soa-form.component";
 
 @Component({
   selector: 'app-root',
