@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SoaService } from './services/soa.service';
-import { SoaDetail } from './models/soa-detail.model';
-import { SoaFormComponent } from "./components/soa-form/soa-form.component";
 
 @Component({
   selector: 'app-root',
@@ -13,112 +11,113 @@ import { SoaFormComponent } from "./components/soa-form/soa-form.component";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-
   form!: FormGroup;
-  details: SoaDetail[] = [];
+  loading = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private soaService: SoaService
-  ) {}
+  // default load
+  private readonly defaultId = 6792;
+
+  constructor(private fb: FormBuilder, private soaService: SoaService) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
-
-      // HEADER
-      id: ['6792'],
+      id: [this.defaultId],
       date: [''],
-      payor: [''],
+      payor: ['', Validators.required],
       address: [''],
       particulars: [''],
       period: [''],
 
-      soaSeries: [''],
-      serialNo: [''],
-      isMobile: [false],
-
-      txnType: [''],
-      licenseType: [''],
-
-      // LICENSE FEES
-      permitPurchase: [''],
-      filingFeeLicense: [''],
-      permitPossess: [''],
-      constructionFee: [''],
-      radioLicense: [''],
-      inspectionFeeLicense: [''],
-      suf: [''],
-      fines: [''],
-      surchargeLicense: [''],
-
-      // PERMITS
-      permitFees: [''],
-      inspectionFeePermit: [''],
-      filingFeePermit: [''],
-      surchargePermit: [''],
-
-      // AMATEUR
-      amateurRadio: [0],
+      radioLicense: [0],
       rocCert: [0],
-      applicationFee: [''],
-      filingFeeAmateur: [''],
-      seminarFee: [''],
       surchargeAmateur: [0],
-
-      // OTHER
       dst: [0],
 
-      remarks: [''],
-      assessmentNote: [''],
-      preparedBy: [''],
-      approvedBy: [''],
-      orNo: [''],
-      datePaid: ['']
+      remarks: ['']
     });
 
-    // LOAD EXISTING SOA
-    this.loadSoa(6792);
+    this.loadSoa(this.defaultId);
   }
 
   loadSoa(id: number): void {
+    this.loading = true;
 
-    // SOA HEADER
-    this.soaService.getSoa(id).subscribe({
-      next: soa => this.form.patchValue(soa),
-      error: err => console.error('SOA load error', err)
-    });
+    this.soaService.getById(id).subscribe({
+      next: (db: any) => {
+        // NOTE: Use the actual returned keys from API
+        this.form.patchValue({
+          id: db.id ?? db.ID ?? id,
+          date: db.dateIssued ?? db.DateIssued ?? '',
+          payor: db.licensee ?? db.LICENSEE ?? '',
+          address: db.address ?? db.Address ?? '',
+          particulars: db.particulars ?? db.Particulars ?? '',
+          period: db.periodCovered ?? db.PeriodCovered ?? '',
 
-    // SOA DETAILS
-    this.soaService.getSoaDetails(id).subscribe({
-      next: details => {
-        this.details = details;
+          // ✅ use RSL or ROC based on what your backend returns
+          radioLicense: +(db.rslRadioStation ?? db.rocRadioStation ?? 0),
+          rocCert: +(db.rocOperatorFee ?? 0),
+          surchargeAmateur: +(db.rslSurcharge ?? db.rocSurcharge ?? 0),
+          dst: +(db.dst ?? db.DST ?? 0),
 
-        // auto-map detail amounts into form fields
-        details.forEach(d => {
-          if (this.form.contains(d.field)) {
-            this.form.get(d.field)?.setValue(d.amount);
-          }
+          remarks: db.remarksNote ?? db.REMARKS_NOTE ?? db['REMARKS/NOTE'] ?? ''
         });
+
+        this.loading = false;
       },
-      error: err => console.error('SOA details error', err)
+      error: (err: any) => {
+        console.error('SOA load error', err);
+        this.loading = false;
+      }
     });
   }
 
   get total(): number {
-    const f = this.form.value;
-    return (
-      (+f.amateurRadio || 0) +
-      (+f.rocCert || 0) +
-      (+f.surchargeAmateur || 0) +
-      (+f.dst || 0)
-    );
+    const f = this.form.value as any;
+    return (+f.radioLicense || 0) + (+f.rocCert || 0) + (+f.surchargeAmateur || 0) + (+f.dst || 0);
   }
 
   save(): void {
-    console.log('FINAL SOA PAYLOAD', {
-      header: this.form.value,
-      details: this.details
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      alert('Please fill required fields.');
+      return;
+    }
+
+    const f = this.form.value as any;
+
+    const payload = {
+      id: +f.id,
+      dateIssued: f.date || null,
+      licensee: f.payor || null,
+      address: f.address || null,
+      particulars: f.particulars || null,
+      periodCovered: f.period || null,
+
+      // ✅ match backend property names
+      rslRadioStation: +f.radioLicense || 0,
+      rocOperatorFee: +f.rocCert || 0,
+      rslSurcharge: +f.surchargeAmateur || 0,
+      dst: +f.dst || 0,
+
+      remarksNote: f.remarks || null,
+      totalAmount: this.total
+    };
+
+    this.loading = true;
+
+    this.soaService.update(+payload.id, payload).subscribe({
+      next: () => {
+        this.loading = false;
+        alert('SOA Saved');
+      },
+      error: (err: any) => {
+        this.loading = false;
+        console.error('Save error', err);
+        alert('Save failed. Check console.');
+      }
     });
-    alert('SOA Saved');
   }
 }
+
+
+

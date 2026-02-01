@@ -1,99 +1,54 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Soa } from '../models/soa.model';
-import { SoaDetail } from '../models/soa-detail.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface AccessSOAPayload {
+  id?: number;
+
+  dateIssued?: string | null;
+  licensee?: string | null;
+  address?: string | null;
+  particulars?: string | null;
+  periodCovered?: string | null;
+
+  rslRadioStation?: number | null;
+  rocOperatorFee?: number | null;
+  rslSurcharge?: number | null;
+  dst?: number | null;
+
+  // optional fields if you added them
+  orNumber?: string | null;
+  datePaid?: string | null;
+
+  remarksNote?: string | null;
+  totalAmount?: number | null;
+}
+
+@Injectable({ providedIn: 'root' })
 export class SoaService {
 
-  private readonly baseUrl = 'http://localhost:5000/api/soa';
+  // ✅ FIXED: use Swagger port 5081
+  private baseUrl = 'https://localhost:5081/api/AccessSOA';
 
   constructor(private http: HttpClient) {}
 
-  /* ========================
-     GET
-  ========================= */
-
-  /** GET SOA HEADER */
-  getSoa(id: number): Observable<Soa> {
-    return this.http.get<Soa>(`${this.baseUrl}/${id}`);
+  getAll(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseUrl);
   }
 
-  /** GET SOA DETAILS */
-  getSoaDetails(id: number): Observable<SoaDetail[]> {
-    return this.http.get<SoaDetail[]>(`${this.baseUrl}/${id}/details`);
+  getById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/${id}`);
   }
 
-  /** GET ALL SOA */
-  getAllSoa(): Observable<Soa[]> {
-    return this.http.get<Soa[]>(this.baseUrl);
+  create(payload: AccessSOAPayload): Observable<any> {
+    return this.http.post<any>(this.baseUrl, payload);
   }
 
-
-  /* ========================
-     POST (CREATE)
-  ========================= */
-
-  /** CREATE NEW SOA */
-  createSoa(soa: Soa): Observable<Soa> {
-    return this.http.post<Soa>(this.baseUrl, soa);
+  update(id: number, payload: AccessSOAPayload): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/${id}`, payload);
   }
 
-  /** CREATE SOA DETAIL */
-  createSoaDetail(
-    soaId: number,
-    detail: SoaDetail
-  ): Observable<SoaDetail> {
-    return this.http.post<SoaDetail>(
-      `${this.baseUrl}/${soaId}/details`,
-      detail
-    );
+  delete(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/${id}`);
   }
-
-
-  /* ========================
-     PUT (UPDATE)
-  ========================= */
-
-  /** UPDATE SOA */
-  updateSoa(id: number, soa: Soa): Observable<Soa> {
-    return this.http.put<Soa>(
-      `${this.baseUrl}/${id}`,
-      soa
-    );
-  }
-
-  /** UPDATE SOA DETAIL */
-  updateSoaDetail(
-    detailId: number,
-    detail: SoaDetail
-  ): Observable<SoaDetail> {
-    return this.http.put<SoaDetail>(
-      `${this.baseUrl}/details/${detailId}`,
-      detail
-    );
-  }
-
-
-  /* ========================
-     DELETE
-  ========================= */
-
-  /** DELETE SOA */
-  deleteSoa(id: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.baseUrl}/${id}`
-    );
-  }
-
-  /** DELETE SOA DETAIL */
-  deleteSoaDetail(detailId: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.baseUrl}/details/${detailId}`
-    );
-  }
-
 }
